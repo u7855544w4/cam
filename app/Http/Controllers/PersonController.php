@@ -19,41 +19,46 @@ class PersonController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|in:employee,visitor,citizen',
-            'image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        $imagePath = $request->file('image')->store('people', 'public');
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('people', 'public');
+        }
 
-        // Call Python service to encode face
-        $fullPath = storage_path('app/public/' . $imagePath);
+        // Call Python service to encode face (optional)
+        $fullPath = $imagePath ? storage_path('app/public/' . $imagePath) : null;
         $faceEncoding = null;
         
-        $pythonHost = env('PYTHON_SERVICE_HOST', '127.0.0.1');
-        $pythonPort = env('PYTHON_SERVICE_PORT', 5000);
-        
-        try {
-            $client = new \GuzzleHttp\Client([
-                'base_uri' => "http://{$pythonHost}:{$pythonPort}",
-                'timeout' => 30,
-            ]);
-
-            $response = $client->post('/api/detect', [
-                'multipart' => [
-                    [
-                        'name' => 'image',
-                        'contents' => fopen($fullPath, 'r'),
-                    ],
-                ],
-            ]);
-
-            $result = json_decode($response->getBody(), true);
+        if ($fullPath && file_exists($fullPath)) {
+            $pythonHost = env('PYTHON_SERVICE_HOST', '127.0.0.1');
+            $pythonPort = env('PYTHON_SERVICE_PORT', 5000);
             
-            if ($result && $result['faces_found'] > 0 && isset($result['encodings'][0])) {
-                $faceEncoding = json_encode($result['encodings'][0]);
+            try {
+                $client = new \GuzzleHttp\Client([
+                    'base_uri' => "http://{$pythonHost}:{$pythonPort}",
+                    'timeout' => 30,
+                ]);
+
+                $response = $client->post('/api/detect', [
+                    'multipart' => [
+                        [
+                            'name' => 'image',
+                            'contents' => fopen($fullPath, 'r'),
+                        ],
+                    ],
+                ]);
+
+                $result = json_decode($response->getBody(), true);
+                
+                if ($result && $result['faces_found'] > 0 && isset($result['encodings'][0])) {
+                    $faceEncoding = json_encode($result['encodings'][0]);
+                }
+            } catch (\Exception $e) {
+                // Continue without face encoding if service is not available
+                \Log::warning('Face encoding service not available: ' . $e->getMessage());
             }
-        } catch (\Exception $e) {
-            // Continue without face encoding if service is not available
-            \Log::warning('Face encoding service not available: ' . $e->getMessage());
         }
 
         $person = Person::create([
