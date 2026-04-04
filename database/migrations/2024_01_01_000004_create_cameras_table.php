@@ -10,8 +10,10 @@ return new class extends Migration
     {
         Schema::create('cameras', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('nvr_id')->nullable()->constrained('nvrs')->onDelete('set null');
             $table->string('name');
-            $table->string('ip');
+            $table->string('ip')->nullable();
+            $table->integer('channel')->nullable(); // NVR channel number
             $table->string('rtsp_url')->nullable();
             $table->string('location')->nullable();
             $table->boolean('is_active')->default(true);

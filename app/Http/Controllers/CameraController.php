@@ -9,15 +9,17 @@ class CameraController extends Controller
 {
     public function index()
     {
-        $cameras = Camera::latest()->paginate(10);
+        $cameras = Camera::with('nvr')->latest()->paginate(10);
         return response()->json($cameras);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'nvr_id' => 'nullable|exists:nvrs,id',
             'name' => 'required|string|max:255',
-            'ip' => 'required|string|max:255',
+            'ip' => 'nullable|string|max:255',
+            'channel' => 'nullable|integer|min:1',
             'rtsp_url' => 'nullable|string|max:500',
             'location' => 'nullable|string|max:255',
         ]);
@@ -32,14 +34,16 @@ class CameraController extends Controller
 
     public function show(Camera $camera)
     {
-        return response()->json($camera->load('detections'));
+        return response()->json($camera->load(['detections', 'nvr']));
     }
 
     public function update(Request $request, Camera $camera)
     {
         $validated = $request->validate([
+            'nvr_id' => 'nullable|exists:nvrs,id',
             'name' => 'sometimes|string|max:255',
-            'ip' => 'sometimes|string|max:255',
+            'ip' => 'nullable|string|max:255',
+            'channel' => 'nullable|integer|min:1',
             'rtsp_url' => 'nullable|string|max:500',
             'location' => 'nullable|string|max:255',
             'is_active' => 'sometimes|boolean',
@@ -66,6 +70,8 @@ class CameraController extends Controller
         return response()->json([
             'camera' => $camera,
             'stream_url' => $camera->rtsp_url,
+            'rtsp_url' => $camera->rtsp_url,
+            'nvr' => $camera->nvr,
         ]);
     }
 }

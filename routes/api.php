@@ -3,6 +3,7 @@
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\CameraController;
 use App\Http\Controllers\DetectionController;
+use App\Http\Controllers\NvrController;
 use Illuminate\Support\Facades\Route;
 
 // API Routes for Face Recognition System
@@ -10,6 +11,11 @@ use Illuminate\Support\Facades\Route;
 // People routes
 Route::apiResource('people', PersonController::class);
 Route::post('people/search', [PersonController::class, 'searchByImage']);
+
+// NVR routes (before cameras)
+Route::apiResource('nvrs', NvrController::class);
+Route::get('nvrs/{nvr}/channels', [NvrController::class, 'channels']);
+Route::get('nvrs/{nvr}/test', [NvrController::class, 'testConnection']);
 
 // Cameras routes
 Route::apiResource('cameras', CameraController::class);
