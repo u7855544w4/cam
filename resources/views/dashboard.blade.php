@@ -167,11 +167,14 @@
                 <div class="bg-white rounded-lg shadow p-6">
                     <h3 class="font-bold text-lg mb-4">⚡ إجراءات سريعة</h3>
                     <div class="space-y-3">
-                        <a href="/people/create" class="block bg-blue-600 text-white text-center py-3 rounded-lg hover:bg-blue-700">
-                            ➕ إضافة شخص جديد
+                        <a href="/nvrs/create" class="block bg-purple-600 text-white text-center py-3 rounded-lg hover:bg-purple-700">
+                            🖥️ إضافة NVR
                         </a>
                         <a href="/cameras/create" class="block bg-green-600 text-white text-center py-3 rounded-lg hover:bg-green-700">
                             📷 إضافة كاميرا
+                        </a>
+                        <a href="/people/create" class="block bg-blue-600 text-white text-center py-3 rounded-lg hover:bg-blue-700">
+                            ➕ إضافة شخص
                         </a>
                         <a href="/search" class="block bg-purple-600 text-white text-center py-3 rounded-lg hover:bg-purple-700">
                             🔍 البحث بالصورة
