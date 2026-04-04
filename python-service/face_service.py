@@ -22,8 +22,8 @@ app = Flask(__name__)
 CORS(app)
 
 # Database path
-DB_PATH = '/workspace/face-recognition-system/database/database.sqlite'
-IMAGES_DIR = '/workspace/face-recognition-system/storage/app/public/people'
+DB_PATH = '/workspace/cam/database/database.sqlite'
+IMAGES_DIR = '/workspace/cam/storage/app/public/people'
 
 def get_db_connection():
     """Get database connection"""
