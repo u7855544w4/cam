@@ -30,6 +30,9 @@ Route::get('/search', function () {
     return view('search');
 });
 
+// Search by image - API
+Route::post('/search', [PersonController::class, 'searchByImage']);
+
 // Reports route
 Route::get('/reports', function () {
     return view('reports');

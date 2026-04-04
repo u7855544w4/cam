@@ -35,4 +35,19 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Face Recognition Service
+    |--------------------------------------------------------------------------
+    */
+    
+    'face_recognition' => [
+        'url' => env('FACE_RECOGNITION_SERVICE_URL', 'http://localhost:5000'),
+    ],
+
+    'streaming' => [
+        'hls_path' => env('HLS_PATH', '/workspace/cam/storage/stream'),
+        'ffmpeg_path' => env('FFMPEG_PATH', '/usr/bin/ffmpeg'),
+    ],
+
 ];

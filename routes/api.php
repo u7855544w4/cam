@@ -30,3 +30,14 @@ Route::get('detections/statistics', [DetectionController::class, 'statistics']);
 
 // Dashboard route
 Route::get('dashboard', [DetectionController::class, 'statistics']);
+
+// Face Recognition Service Integration
+use App\Http\Controllers\Api\FaceRecognitionController;
+
+Route::prefix('face')->group(function () {
+    Route::get('health', [FaceRecognitionController::class, 'health']);
+    Route::post('detect', [FaceRecognitionController::class, 'detect']);
+    Route::post('encode', [FaceRecognitionController::class, 'encode']);
+    Route::post('recognize', [FaceRecognitionController::class, 'recognize']);
+    Route::post('search', [FaceRecognitionController::class, 'search']);
+});
