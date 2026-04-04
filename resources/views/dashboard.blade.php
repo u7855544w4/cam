@@ -342,7 +342,9 @@
                 },
                 
                 requestNotificationPermission() {
-                    if (typeof FaceNotifications !== 'undefined') {
+                    if (typeof requestNotificationPermission === 'function') {
+                        requestNotificationPermission();
+                    } else if (typeof FaceNotifications !== 'undefined') {
                         FaceNotifications.requestPermission();
                     }
                     this.showPermissionBanner = false;

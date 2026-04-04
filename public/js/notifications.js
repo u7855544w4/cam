@@ -155,6 +155,28 @@
     // Export for manual triggering
     window.FaceNotifications = {
         show: showNotification,
-        requestPermission: requestPermission
+        requestPermission: requestPermission,
+        showAlert: function(title, message) {
+            if (Notification.permission === 'granted') {
+                new Notification(title, { body: message });
+            }
+        }
     };
 })();
+
+// Also export globally for immediate access
+window.requestNotificationPermission = function() {
+    if ('Notification' in window) {
+        if (Notification.permission === 'default') {
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    alert('✅ تم تفعيل الإشعارات بنجاح!');
+                }
+            });
+        } else if (Notification.permission === 'granted') {
+            alert('ℹ️ الإشعارات مفعلة بالفعل');
+        } else {
+            alert('⚠️ الإشعارات محجوبة. يرجى السماح لها في إعدادات المتصفح');
+        }
+    }
+};
