@@ -10,6 +10,13 @@ class CameraController extends Controller
     public function index()
     {
         $cameras = Camera::with('nvr')->latest()->paginate(10);
+        
+        // Add rtsp_url to each camera
+        $cameras->getCollection()->transform(function ($camera) {
+            $camera->rtsp_url = $camera->rtsp_url;
+            return $camera;
+        });
+        
         return response()->json($cameras);
     }
 

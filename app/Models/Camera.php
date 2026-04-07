@@ -40,13 +40,27 @@ class Camera extends Model
 
     public function getRtspUrlAttribute(): string
     {
+        // If custom RTSP URL is provided, use it
+        if (!empty($this->attributes['rtsp_url'])) {
+            return $this->attributes['rtsp_url'];
+        }
+        
         // If NVR exists, generate RTSP URL from NVR settings
         if ($this->nvr && $this->channel) {
             $protocol = 'rtsp';
             return "{$protocol}://{$this->nvr->ip}:{$this->nvr->port}/channel/{$this->channel}/stream/0";
         }
         
-        // Otherwise return custom RTSP URL
-        return $this->attributes['rtsp_url'] ?? '';
+        // For direct IP cameras (no NVR)
+        if ($this->ip) {
+            $port = 554;
+            
+            // UNV (UniNVR) cameras RTSP format
+            // Format: rtsp://<ip>:554/media/video1 or media/video2
+            $stream = $this->channel == 2 ? 'media/video2' : 'media/video1';
+            return "rtsp://{$this->ip}:{$port}/{$stream}";
+        }
+        
+        return '';
     }
 }

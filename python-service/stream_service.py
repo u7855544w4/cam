@@ -26,7 +26,7 @@ os.makedirs(STREAM_DIR, exist_ok=True)
 # Active streams
 active_streams = {}
 
-def convert_rtsp_to_hls(camera_id, rtsp_url, name):
+def convert_rtsp_to_hls(camera_id, rtsp_url, name, username=None, password=None):
     """Convert RTSP stream to HLS"""
     output_dir = os.path.join(STREAM_DIR, str(camera_id))
     os.makedirs(output_dir, exist_ok=True)
@@ -34,7 +34,7 @@ def convert_rtsp_to_hls(camera_id, rtsp_url, name):
     playlist = os.path.join(output_dir, 'playlist.m3u8')
     segment = os.path.join(output_dir, 'segment%03d.ts')
     
-    # FFmpeg command
+    # Build FFmpeg command
     cmd = [
         FFMPEG_PATH,
         '-rtsp_transport', 'tcp',
@@ -42,7 +42,7 @@ def convert_rtsp_to_hls(camera_id, rtsp_url, name):
         '-c:v', 'libx264',
         '-preset', 'ultrafast',
         '-tune', 'zerolatency',
-        '-b:v', '1000k',
+        '-b:v', '2000k',
         '-b:a', '64k',
         '-hls_time', '2',
         '-hls_list_size', '3',
@@ -53,12 +53,24 @@ def convert_rtsp_to_hls(camera_id, rtsp_url, name):
         playlist
     ]
     
+    # Add re-connection options for stability
+    cmd.extend(['-reconnect', '1', '-reconnect_streamed', '1', '-reconnect_delay_max', '5'])
+    
     try:
         process = subprocess.Popen(
             cmd,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
         )
+        
+        # Wait a moment to check if FFmpeg starts successfully
+        time.sleep(2)
+        
+        # Check if process is still running
+        if process.poll() is not None:
+            stdout, stderr = process.communicate()
+            print(f"FFmpeg error: {stderr.decode() if stderr else 'Unknown error'}")
+            return False
         
         active_streams[camera_id] = {
             'process': process,
@@ -97,6 +109,8 @@ def start_stream():
     camera_id = data.get('camera_id')
     rtsp_url = data.get('rtsp_url')
     name = data.get('name', f'Camera {camera_id}')
+    username = data.get('username')
+    password = data.get('password')
     
     if not camera_id or not rtsp_url:
         return jsonify({'error': 'camera_id and rtsp_url required'}), 400
@@ -110,7 +124,7 @@ def start_stream():
         })
     
     # Start stream
-    success = convert_rtsp_to_hls(camera_id, rtsp_url, name)
+    success = convert_rtsp_to_hls(camera_id, rtsp_url, name, username, password)
     
     if success:
         return jsonify({
@@ -119,7 +133,7 @@ def start_stream():
             'stream_url': f'/stream/{camera_id}/playlist.m3u8'
         })
     
-    return jsonify({'error': 'Failed to start stream'}), 500
+    return jsonify({'error': 'Failed to start stream. Check if camera is online and RTSP URL is correct.'}), 500
 
 @app.route('/api/stop', methods=['POST'])
 def stop():
