@@ -81,4 +81,36 @@ class CameraController extends Controller
             'nvr' => $camera->nvr,
         ]);
     }
+
+    public function testConnection(Camera $camera)
+    {
+        $rtspUrl = $camera->rtsp_url;
+        
+        if (empty($rtspUrl)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'لا يوجد رابط RTSP',
+                'camera' => $camera,
+            ], 400);
+        }
+
+        // Try to connect to the camera stream
+        // This is a basic check - in production you'd use FFprobe or similar
+        $command = sprintf(
+            'timeout 5 ffprobe -v error -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 "%s" 2>&1',
+            escapeshellarg($rtspUrl)
+        );
+        
+        $output = shell_exec($command);
+        $isOnline = !empty($output) && strpos($output, 'h264') !== false;
+        
+        return response()->json([
+            'success' => $isOnline,
+            'online' => $isOnline,
+            'message' => $isOnline ? 'الكاميرا متصلة وتعمل' : 'لا يمكن الاتصال بالكاميرا',
+            'rtsp_url' => $rtspUrl,
+            'codec' => trim($output),
+            'camera' => $camera,
+        ]);
+    }
 }

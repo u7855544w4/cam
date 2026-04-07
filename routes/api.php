@@ -20,6 +20,7 @@ Route::get('nvrs/{nvr}/test', [NvrController::class, 'testConnection']);
 // Cameras routes
 Route::apiResource('cameras', CameraController::class);
 Route::get('cameras/{camera}/stream', [CameraController::class, 'stream']);
+Route::get('cameras/{camera}/test', [CameraController::class, 'testConnection']);
 
 // Detections routes
 Route::get('detections', [DetectionController::class, 'index']);

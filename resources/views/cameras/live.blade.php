@@ -188,16 +188,27 @@
                                         class="text-white px-3 py-1 rounded text-sm">
                                     <span x-text="isStreaming(camera.id) ? '⏹ إيقاف' : '▶ تشغيل'"></span>
                                 </button>
+                                <button @click="testConnection(camera)" 
+                                        :disabled="camera.testing"
+                                        class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm disabled:opacity-50">
+                                    <span x-show="!camera.testing">🧪 اختبار</span>
+                                    <span x-show="camera.testing">...</span>
+                                </button>
                             </div>
                             
                             <!-- Status -->
                             <div class="flex items-center space-x-1 space-x-reverse">
-                                <span x-class="{'bg-green-500': camera.is_active, 'bg-red-500': !camera.is_active}"
-                                      class="w-2 h-2 rounded-full"
-                                      :class="camera.is_active ? 'bg-green-500' : 'bg-red-500'"></span>
+                                <span class="w-2 h-2 rounded-full"
+                                      :class="getStatusClass(camera)"></span>
                                 <span class="text-gray-400 text-xs" 
-                                      x-text="camera.is_active ? 'نشط' : 'غير نشط'"></span>
+                                      x-text="getStatusText(camera)"></span>
                             </div>
+                        </div>
+                        
+                        <!-- Test Result -->
+                        <div x-show="camera.testResult" class="mt-2 text-xs"
+                             :class="camera.testResult?.success ? 'text-green-400' : 'text-red-400'"
+                             x-text="camera.testResult?.message || ''">
                         </div>
                     </div>
                 </div>
@@ -458,6 +469,52 @@
                 
                 closeFullscreen() {
                     this.fullscreenCamera = null;
+                },
+                
+                async testConnection(camera) {
+                    // Find camera in array and set testing state
+                    const camIndex = this.cameras.findIndex(c => c.id === camera.id);
+                    if (camIndex === -1) return;
+                    
+                    this.cameras[camIndex].testing = true;
+                    this.cameras[camIndex].testResult = null;
+                    
+                    try {
+                        const response = await fetch(`/api/cameras/${camera.id}/test`);
+                        const data = await response.json();
+                        
+                        this.cameras[camIndex].testResult = {
+                            success: data.success,
+                            message: data.message,
+                            online: data.online
+                        };
+                        
+                        // Update camera is_active based on test result
+                        if (data.success && data.online) {
+                            this.cameras[camIndex].is_active = true;
+                        }
+                    } catch (e) {
+                        this.cameras[camIndex].testResult = {
+                            success: false,
+                            message: 'خطأ في الاتصال'
+                        };
+                    }
+                    
+                    this.cameras[camIndex].testing = false;
+                },
+                
+                getStatusClass(camera) {
+                    if (camera.testResult?.online === true) return 'bg-green-500';
+                    if (camera.testResult?.online === false) return 'bg-red-500';
+                    if (camera.is_active) return 'bg-yellow-500';
+                    return 'bg-gray-500';
+                },
+                
+                getStatusText(camera) {
+                    if (camera.testResult?.online === true) return 'متصل';
+                    if (camera.testResult?.online === false) return 'غير متصل';
+                    if (camera.is_active) return 'نشط';
+                    return 'غير نشط';
                 }
             };
         }
