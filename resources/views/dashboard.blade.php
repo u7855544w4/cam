@@ -167,6 +167,9 @@
                 <div class="bg-white rounded-lg shadow p-6">
                     <h3 class="font-bold text-lg mb-4">⚡ إجراءات سريعة</h3>
                     <div class="space-y-3">
+                        <a href="/cameras/live" class="block bg-red-600 text-white text-center py-3 rounded-lg hover:bg-red-700">
+                            📹 العرض المباشر
+                        </a>
                         <a href="/nvrs/create" class="block bg-purple-600 text-white text-center py-3 rounded-lg hover:bg-purple-700">
                             🖥️ إضافة NVR
                         </a>

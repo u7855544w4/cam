@@ -25,6 +25,10 @@ Route::get('/cameras/create', function () {
     return view('cameras.create');
 });
 
+Route::get('/cameras/live', function () {
+    return view('cameras.live');
+});
+
 // Search route
 Route::get('/search', function () {
     return view('search');
