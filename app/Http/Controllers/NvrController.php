@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Nvr;
+use App\Models\Camera;
 use Illuminate\Http\Request;
 
 class NvrController extends Controller
@@ -24,13 +25,30 @@ class NvrController extends Controller
             'model' => 'nullable|string|max:255',
             'manufacturer' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
+            'channels_count' => 'nullable|integer|min:1|max:64',
         ]);
 
         $nvr = Nvr::create($validated);
 
+        // Auto-create cameras based on channels count
+        $channelsCount = $validated['channels_count'] ?? 8;
+        $cameras = [];
+        
+        for ($channel = 1; $channel <= $channelsCount; $channel++) {
+            $camera = Camera::create([
+                'nvr_id' => $nvr->id,
+                'name' => "Camera $channel",
+                'channel' => $channel,
+                'location' => "Channel $channel",
+                'is_active' => true,
+            ]);
+            $cameras[] = $camera;
+        }
+
         return response()->json([
-            'message' => 'NVR created successfully',
-            'nvr' => $nvr,
+            'message' => 'NVR created successfully with ' . count($cameras) . ' cameras',
+            'nvr' => $nvr->load('cameras'),
+            'cameras' => $cameras,
         ], 201);
     }
 

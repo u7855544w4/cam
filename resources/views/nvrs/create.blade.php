@@ -75,6 +75,14 @@
                 </div>
 
                 <div>
+                    <label class="block text-sm font-medium mb-2">عدد الكاميرات (القنوات)</label>
+                    <input type="number" name="channels_count" value="8" min="1" max="64"
+                        class="w-full border rounded-lg px-4 py-2"
+                        placeholder="عدد قنوات NVR">
+                    <p class="text-sm text-gray-500 mt-1">سيتم إنشاء هذا العدد من الكاميرات تلقائياً</p>
+                </div>
+
+                <div>
                     <label class="block text-sm font-medium mb-2">ملاحظات</label>
                     <textarea name="notes" rows="2" 
                         class="w-full border rounded-lg px-4 py-2"></textarea>
@@ -113,10 +121,11 @@
                 const data = await response.json();
 
                 if (response.ok) {
+                    const camerasCount = data.cameras ? data.cameras.length : 0;
                     messageDiv.className = 'mt-4 p-4 rounded-lg bg-green-100 text-green-700';
-                    messageDiv.textContent = '✅ تم إضافة NVR بنجاح!';
+                    messageDiv.textContent = '✅ تم إضافة NVR بنجاح! تم إنشاء ' + camerasCount + ' كاميرات';
                     form.reset();
-                    setTimeout(() => window.location.href = '/', 1500);
+                    setTimeout(() => window.location.href = '/', 2000);
                 } else {
                     messageDiv.className = 'mt-4 p-4 rounded-lg bg-red-100 text-red-700';
                     messageDiv.textContent = '❌ ' + (data.message || 'حدث خطأ');
