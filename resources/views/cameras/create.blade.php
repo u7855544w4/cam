@@ -53,11 +53,27 @@
                 </div>
 
                 <div id="standaloneFields">
-                    <div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">عنوان IP</label>
+                            <input type="text" name="ip" 
+                                class="w-full border rounded-lg px-4 py-2"
+                                placeholder="192.168.1.100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">الموقع</label>
+                            <input type="text" name="location" 
+                                class="w-full border rounded-lg px-4 py-2"
+                                placeholder="مثال: المدخل الرئيسي">
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
                         <label class="block text-sm font-medium mb-2">رابط RTSP (اختياري)</label>
                         <input type="text" name="rtsp_url" 
                             class="w-full border rounded-lg px-4 py-2"
-                            placeholder="rtsp://192.168.1.100:554/stream">
+                            placeholder="اتركه فارغاً لكاميرات UNV">
+                        <p class="text-xs text-gray-500 mt-1">اتركه فارغاً لكاميرات UNV (سيُستخدم rtsp://IP:554/media/video1)</p>
                     </div>
                 </div>
 
