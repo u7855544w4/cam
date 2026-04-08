@@ -94,22 +94,35 @@ class CameraController extends Controller
             ], 400);
         }
 
-        // Try to connect to the camera stream
-        // This is a basic check - in production you'd use FFprobe or similar
+        // Use Python script to test stream
         $command = sprintf(
-            'timeout 5 ffprobe -v error -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 "%s" 2>&1',
+            'cd /workspace/project/cam/python-service && python3 test_stream.py "%s" 2>&1',
             escapeshellarg($rtspUrl)
         );
         
         $output = shell_exec($command);
-        $isOnline = !empty($output) && strpos($output, 'h264') !== false;
         
+        // Parse JSON output
+        $result = json_decode($output, true);
+        
+        if ($result && $result['success']) {
+            return response()->json([
+                'success' => true,
+                'online' => true,
+                'message' => "الكاميرا متصلة! {$result['codec']} ({$result['width']}x{$result['height']})",
+                'codec' => $result['codec'] ?? 'unknown',
+                'resolution' => "{$result['width']}x{$result['height']}",
+                'rtsp_url' => $rtspUrl,
+                'camera' => $camera,
+            ]);
+        }
+        
+        $errorMsg = $result['error'] ?? 'لا يمكن الاتصال بالكاميرا';
         return response()->json([
-            'success' => $isOnline,
-            'online' => $isOnline,
-            'message' => $isOnline ? 'الكاميرا متصلة وتعمل' : 'لا يمكن الاتصال بالكاميرا',
+            'success' => false,
+            'online' => false,
+            'message' => $errorMsg,
             'rtsp_url' => $rtspUrl,
-            'codec' => trim($output),
             'camera' => $camera,
         ]);
     }

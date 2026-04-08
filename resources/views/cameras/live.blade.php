@@ -480,13 +480,21 @@
                     this.cameras[camIndex].testResult = null;
                     
                     try {
-                        const response = await fetch(`/api/cameras/${camera.id}/test`);
+                        // Try direct PHP endpoint first (doesn't need Laravel running)
+                        const response = await fetch(`/api/camera-test.php?camera_id=${camera.id}`);
                         const data = await response.json();
+                        
+                        // If PHP endpoint fails, try API endpoint
+                        if (!response.ok) {
+                            const apiResponse = await fetch(`/api/cameras/${camera.id}/test`);
+                            data = await apiResponse.json();
+                        }
                         
                         this.cameras[camIndex].testResult = {
                             success: data.success,
                             message: data.message,
-                            online: data.online
+                            online: data.online,
+                            rtsp_url: data.rtsp_url
                         };
                         
                         // Update camera is_active based on test result
@@ -496,7 +504,7 @@
                     } catch (e) {
                         this.cameras[camIndex].testResult = {
                             success: false,
-                            message: 'خطأ في الاتصال'
+                            message: 'خطأ في الاتصال: ' + e.message
                         };
                     }
                     
